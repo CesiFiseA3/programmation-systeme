@@ -2,6 +2,7 @@
 using System.IO;
 using System.Text.Json;
 using System.Xml;
+using System.Xml.Linq;
 
 namespace PROGRAMMATION_SYST_ME.Model
 {
@@ -61,15 +62,55 @@ namespace PROGRAMMATION_SYST_ME.Model
         /// <param name="fileSize"> Size of the log file </param>
         public void WriteLogSave(BackupJobDataModel logData, long elapsedTime, long saveSize)
         {
-            LogDataModel data = new LogDataModel()
+            
+            if (Xml.SelectSingleNode("/root/ExtLog").InnerText == "xml")
             {
-                LogData = logData,
-                ElapsedTime = elapsedTime,
-                SaveSize = saveSize,
-                Time = DateTime.Now.ToString()
-            };
-            var jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
-            File.AppendAllText(logFile, jsonString);
+
+
+
+                XmlElement root = Xml.DocumentElement;
+                
+                XmlElement log = Xml.CreateElement("log");
+                root.AppendChild(log);
+                XmlElement name = Xml.CreateElement("name");
+                name.InnerText = logData.Name;
+                log.AppendChild(name);
+                XmlElement source = Xml.CreateElement("source");
+                source.InnerText = logData.Source;
+                log.AppendChild(source);
+                XmlElement destination = Xml.CreateElement("destination");
+                destination.InnerText = logData.Destination;
+                log.AppendChild(destination);
+                XmlElement type = Xml.CreateElement("type");
+                type.InnerText = logData.Type.ToString();
+                log.AppendChild(type);
+                XmlElement time = Xml.CreateElement("time");
+                time.InnerText = DateTime.Now.ToString();
+                log.AppendChild(time);
+                XmlElement elapsedTimeElement = Xml.CreateElement("elapsedTime");
+                elapsedTimeElement.InnerText = elapsedTime.ToString();
+                log.AppendChild(elapsedTimeElement);
+                XmlElement saveSizeElement = Xml.CreateElement("saveSize");
+                saveSizeElement.InnerText = saveSize.ToString();
+                log.AppendChild(saveSizeElement);
+                
+                Xml.Save(logFile);
+                
+               
+            }
+                else if (Xml.SelectSingleNode("/root/ExtLog").InnerText == "json")
+            {
+
+                LogDataModel data = new LogDataModel()
+                {
+                    LogData = logData,
+                    ElapsedTime = elapsedTime,
+                    SaveSize = saveSize,
+                    Time = DateTime.Now.ToString()
+                };
+                var jsonString = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
+                File.AppendAllText(logFile, jsonString);
+            }
         }
     }
     class LogDataModel
