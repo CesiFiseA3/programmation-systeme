@@ -93,7 +93,7 @@ namespace PROGRAMMATION_SYST_ME.Model
                 XmlElement saveSizeElement = Xml.CreateElement("saveSize");
                 saveSizeElement.InnerText = saveSize.ToString();
                 log.AppendChild(saveSizeElement);
-                
+                //////
                 Xml.Save(logFile);
                 
                
