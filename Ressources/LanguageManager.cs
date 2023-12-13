@@ -7,6 +7,7 @@ using System.Windows;
 
 public static class LanguageManager
 {
+    // JB: J'aime bien cette façon de gérer les traductions
     private static Dictionary<string, Dictionary<string, string>> languages = new Dictionary<string, Dictionary<string, string>>();
 
     static LanguageManager()
@@ -14,7 +15,7 @@ public static class LanguageManager
         languages["en-US"] = new Dictionary<string, string>
         {
             { "WelcomeMessage", "Welcome to EasySave, your backup software!" },
-            { "BackupInformation", "File ID    |     name     |    source     |    destination    |   Backup type" },
+            { "BackupInformation", "ID - Name - Backup type" },
             { "description" ,"Choose your backup"  },
             { "language" ,"Choose your language  :" },
             { "create" ,"Create" },
@@ -22,14 +23,27 @@ public static class LanguageManager
             { "Execut" ,"Execute" },
             { "Delete" ,"Delete" },
             { "ComplSave", "Complete" },
-            { "DifSave", "Diferencial" }
-
+            { "DifSave", "Diferencial" },
+            { "LabName", "Name :" },
+            { "LabId", "ID :" },
+            { "LabSource", "Source folder :" },
+            { "LabDest", "Destination :" },
+            { "LabSaveT", "Backup type :" },
+            { "ButCancel", "Cancel" },
+            { "ButValidate", "Ok" },
+            { "SaveInfo1", "Name" },
+            { "SaveInfo2", "Status" },
+            { "SaveInfo3", "Progression" },
+            { "BackupEnd", "Backups ended without a problem" },
+            { "BackupError", "Error : Backup ended with error code " },
+            { "Crypt", "Do you want to encrypt your backups ?" },
+            { "NameUsed", "Already used" }
         };
 
         languages["fr-FR"] = new Dictionary<string, string>
         {
             { "WelcomeMessage", "Bienvenue dans EasySave, votre logiciel de sauvegarde !" },
-            { "BackupInformation", "ID de fichier   |   nom |     source    |    destination    |   Type" },
+            { "BackupInformation", "ID - Nom - Type" },
             { "description" ,"Choisissez votre sauvegarde"  },
             { "language" ,"Choisissez votre langue : "  },
             { "create" ,"Créer" },
@@ -37,7 +51,22 @@ public static class LanguageManager
             { "Execut" ,"Executer"},
             { "Delete" ,"Supprimer" },
             { "ComplSave","Complète" },
-            { "DifSave","Différentielle" }
+            { "DifSave","Différentielle" },
+            { "LabName","Nom :" },
+            { "LabId", "ID :" },
+            { "LabSource", "Dossier source :" },
+            { "LabDest", "Destination :" },
+            { "LabSaveT", "Sauvegarde :" },
+            { "ButCancel", "Annuler" },
+            { "ButValidate", "Valider" },
+            { "SaveInfo1", "Nom" },
+            { "SaveInfo2", "Status" },
+            { "SaveInfo3", "Progression" },
+            { "BackupEnd", "Les sauvegardes se sont déroulées sans problème"},
+            { "BackupError", "Erreur : Sauvegarde terminée avec le code d'erreur "},
+            { "Crypt", "Voulez-vous chiffrer vos sauvegardes ?" },
+            { "NameUsed", "Déjà utilisé" }
+
         };
     }
 

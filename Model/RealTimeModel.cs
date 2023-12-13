@@ -9,12 +9,12 @@ using Microsoft.VisualBasic.FileIO;
 
 namespace PROGRAMMATION_SYST_ME.Model
 {
-    internal class RealTimeModel
+    public class RealTimeModel
     {
         private string realTimeFile;
         public string ExtRealTime { get; set; }
         public XmlDocument Xml { set; get; } = new XmlDocument();
-        private string xmlPath;
+        private readonly string xmlPath;
         public RealTimeModel()
         {
             xmlPath = Path.Combine(Environment.CurrentDirectory, @"SaveJobsConfig.xml");
@@ -58,7 +58,7 @@ namespace PROGRAMMATION_SYST_ME.Model
                 var i = 0;
                 foreach (RealTimeDataModel data in RealTime)
                 {
-                    var job = CreateXmlElement(newXml, root, "job" + i, "");
+                    var job = CreateXmlElement(newXml, root, "job", "");
                     CreateXmlElement(newXml, job, "id", data.SaveData.Id.ToString());
                     CreateXmlElement(newXml, job, "name", data.SaveData.Name);
                     CreateXmlElement(newXml, job, "source", data.SaveData.Source);
@@ -74,21 +74,12 @@ namespace PROGRAMMATION_SYST_ME.Model
                 newXml.Save(realTimeFile);
             }
         }
-        private XmlElement CreateXmlElement(XmlDocument xml, XmlElement father, string name, string data)
+        private static XmlElement CreateXmlElement(XmlDocument xml, XmlElement father, string name, string data)
         {
             XmlElement element = xml.CreateElement(name);
             element.InnerText = data;
             father.AppendChild(element);
             return element;
         }
-    }
-    internal class RealTimeDataModel
-    {
-        public BackupJobDataModel SaveData { get; set; }
-        public string State { get; set; }
-        public long TotalFilesToCopy { get; set; }
-        public long TotalFilesSize { get; set; }
-        public long NbFilesLeftToDo { get; set; }
-        public double Progression { get; set; }
     }
 }
