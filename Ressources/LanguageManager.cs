@@ -7,6 +7,7 @@ using System.Windows;
 
 public static class LanguageManager
 {
+    // JB: J'aime bien cette façon de gérer les traductions
     private static Dictionary<string, Dictionary<string, string>> languages = new Dictionary<string, Dictionary<string, string>>();
 
     static LanguageManager()
@@ -29,7 +30,14 @@ public static class LanguageManager
             { "LabDest", "Destination :" },
             { "LabSaveT", "Backup type :" },
             { "ButCancel", "Cancel" },
-            { "ButValidate", "Ok" }
+            { "ButValidate", "Ok" },
+            { "SaveInfo1", "Name" },
+            { "SaveInfo2", "Status" },
+            { "SaveInfo3", "Progression" },
+            { "BackupEnd", "Backups ended without a problem" },
+            { "BackupError", "Error : Backup ended with error code " },
+            { "Crypt", "Do you want to encrypt your backups ?" },
+            { "NameUsed", "Already used" }
         };
 
         languages["fr-FR"] = new Dictionary<string, string>
@@ -48,9 +56,16 @@ public static class LanguageManager
             { "LabId", "ID :" },
             { "LabSource", "Dossier source :" },
             { "LabDest", "Destination :" },
-            { "LabSaveT", "Type de sauvegarde :" },
+            { "LabSaveT", "Sauvegarde :" },
             { "ButCancel", "Annuler" },
-            { "ButValidate", "Valider" }
+            { "ButValidate", "Valider" },
+            { "SaveInfo1", "Nom" },
+            { "SaveInfo2", "Status" },
+            { "SaveInfo3", "Progression" },
+            { "BackupEnd", "Les sauvegardes se sont déroulées sans problème"},
+            { "BackupError", "Erreur : Sauvegarde terminée avec le code d'erreur "},
+            { "Crypt", "Voulez-vous chiffrer vos sauvegardes ?" },
+            { "NameUsed", "Déjà utilisé" }
 
         };
     }
