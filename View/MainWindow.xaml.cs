@@ -20,7 +20,7 @@ namespace PROGRAMMATION_SYST_ME.View
         public ErrorCode Error { set; get; }
         public readonly MainWindowViewModel userInteract = new();
         private UpdateWorkJobWindow updateWind;
-
+        public Save SaveWin {  set; get; }
         public MainWindow()
         {
             Process currentProcess = Process.GetCurrentProcess();
@@ -44,10 +44,6 @@ namespace PROGRAMMATION_SYST_ME.View
                 json.IsChecked = true;
             else
                 xml.IsChecked = true;
-
-            iconLoad.Visibility = Visibility.Hidden;
-
-            UpdateUI();
         }
 
         private void RadioButton_Checked(object sender, RoutedEventArgs e)
@@ -163,14 +159,13 @@ namespace PROGRAMMATION_SYST_ME.View
             SetBackupInfoForUpdateWin(id);
             updateWind.UpdateUI();
         }
-
         private void Execut_Click(object sender, RoutedEventArgs e)
         {
-            if (BackupList.SelectedItems.Count <= 0)
+            if (BackupList.SelectedItems.Count <= 0 || SaveWin != null || userInteract.IsSaving)
             {
                 return;
             }
-
+            userInteract.IsSetup = false;
             var msboxAnswer = MessageBox.Show(LocalizedStrings.Crypt, "IsSaveCrypted", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
             if (msboxAnswer == MessageBoxResult.Yes)
                 userInteract.IsCrypt = true;
@@ -185,30 +180,19 @@ namespace PROGRAMMATION_SYST_ME.View
                 jobsToExec.Add((item.ToString()[0] - '0') - 1);
             }
 
-            iconLoad.Visibility = Visibility.Visible;
-
-            UpdateLayout();
-
-            // Used to wait for iconLoad to show
             //thread et lancer la page
 
-            Thread thread = new Thread (() => Dispatcher.Invoke(() => { Error = userInteract.ExecuteJob(jobsToExec); }, DispatcherPriority.ContextIdle));
+            Thread thread = new Thread (() => Error = userInteract.ExecuteJob(jobsToExec));
             thread.Start();
             //instance de la classe qui contient la page
-            Save saveWin = new Save(this, jobsToExec);
-            saveWin.Show();
-            if (Error == ErrorCode.SUCCESS)
+            var saveWinThread = new Thread(() =>
             {
-                MessageBox.Show(LocalizedStrings.BackupEnd, "SaveFinished",
-                            MessageBoxButton.OK);
-            }
-            else
-            {
-                MessageBox.Show(LocalizedStrings.BackupError + Error, "BackupProblem",
-                            MessageBoxButton.OK);
-            }
-
-            iconLoad.Visibility = Visibility.Hidden;
+                SaveWin = new Save(this, jobsToExec);
+                System.Windows.Threading.Dispatcher.Run();
+            });
+            saveWinThread.SetApartmentState(ApartmentState.STA);
+            saveWinThread.IsBackground = true;
+            saveWinThread.Start();
         }
         private void RadioExt_Checked(object sender, RoutedEventArgs e)
         {
@@ -217,7 +201,7 @@ namespace PROGRAMMATION_SYST_ME.View
         }
         private void Window_Closing(object sender, CancelEventArgs e)
         {
-            updateWind?.Close();
+            Environment.Exit(0);
         }
         public static bool IsOpen(Window window)
         {
