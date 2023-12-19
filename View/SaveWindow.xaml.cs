@@ -21,16 +21,17 @@ namespace PROGRAMMATION_SYST_ME.View
     /// <summary>
     /// Interaction logic for Save.xaml
     /// </summary>
-    public partial class Save : Window
+    public partial class SaveWindow : Window
     {
         private readonly MainWindow mhandle;
-        private readonly List<int> jobs;
-        private Thread backThread;  
-        public Save(MainWindow handleMain, List<int> jobsToExec)
+        private readonly List<int> jobs; 
+        public bool End { set; get; } = false;
+        public SaveWindow(MainWindow handleMain, List<int> jobsToExec)
         {
             jobs = jobsToExec;
             mhandle = handleMain;
             InitializeComponent();
+            ProgressListView.Items.Clear();
             while (!mhandle.userInteract.IsSetup) { Thread.Sleep(100); }
             int i = 0;
             foreach (var job in jobs)
@@ -45,22 +46,31 @@ namespace PROGRAMMATION_SYST_ME.View
                 });
                 i++;
             }
-            backThread = new Thread(() =>
+            Thread backThread = new Thread(() =>
             {
-                while (true)
+                while (!End)
                 {
-                    int i = 0;
+                    int y = 0;
+                    bool canEnd = true;
                     foreach (var job in jobs)
                     {
-                        int pro = (int)(mhandle.userInteract.RealTimeData[i].Progression);
-                        this.Dispatcher.Invoke(() => ProgressListView.Items[i] = new Item
+                        int pro = (int)mhandle.userInteract.RealTimeData[y].Progression;
+                        if (pro == 100 && canEnd)
+                            End = true;
+                        else
+                        {
+                            End = false;
+                            canEnd = false;
+                        }
+
+                        this.Dispatcher.Invoke(() => ProgressListView.Items[y] = new Item
                         {
                             Name = mhandle.userInteract.BackupJobsData[job].Name,
                             Progr = pro,
                             ProgrStr = pro.ToString() + " %",
-                            Status = mhandle.userInteract.RealTimeData[i].State
+                            Status = mhandle.userInteract.RealTimeData[y].State
                         });
-                        i++;
+                        y++;
                     }
                     Thread.Sleep(100);
                 }
@@ -69,12 +79,14 @@ namespace PROGRAMMATION_SYST_ME.View
 
             Show();
         }
-        private void GridViewColumnHeader_Click(object sender, RoutedEventArgs e)
-        {
-
-        }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            if (!End)
+            {
+                e.Cancel = true;
+                return;
+            }
+
             mhandle.SaveWin = null;
         }
     }
