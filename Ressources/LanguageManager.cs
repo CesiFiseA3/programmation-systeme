@@ -16,8 +16,8 @@ public static class LanguageManager
         {
             { "WelcomeMessage", "Welcome to EasySave, your backup software!" },
             { "Message", "Here is the progress of your save !" },
-            { "BackupInformation", "ID - Name - Backup type" },
-            { "description" ,"Choose your backup"  },
+            { "BackupInformation", "ID | Name of your backups | Backup type" },
+            { "description" ,"Click on the backup(s) you want to run:"  },
             { "language" ,"Choose your language  :" },
             { "create" ,"Create" },
             { "update" ,"Update" },
@@ -38,15 +38,16 @@ public static class LanguageManager
             { "BackupEnd", "Backups ended without a problem" },
             { "BackupError", "Error : Backup ended with error code " },
             { "Crypt", "Do you want to encrypt your backups ?" },
-            { "NameUsed", "Already used" }
+            { "NameUsed", "Already used" },
+            { "ExtLabel", "Choose priority extension (format : exe;txt;...) :" }
         };
 
         languages["fr-FR"] = new Dictionary<string, string>
         {
             { "WelcomeMessage", "Bienvenue dans EasySave, votre logiciel de sauvegarde !" },
             { "Message", "Voici l'avancement de vos/votre sauvegarde !" },
-            { "BackupInformation", "ID - Nom - Type" },
-            { "description" ,"Choisissez votre sauvegarde"  },
+            { "BackupInformation", "ID | Nom de vos sauvegardes |    Type de sauvegarde" },
+            { "description" ,"Cliquez sur la ou les sauvegarde(s) que vous voulez executer :"  },
             { "language" ,"Choisissez votre langue : "  },
             { "create" ,"Créer" },
             { "update" ,"Modifier"},
@@ -67,7 +68,8 @@ public static class LanguageManager
             { "BackupEnd", "Les sauvegardes se sont déroulées sans problème"},
             { "BackupError", "Erreur : Sauvegarde terminée avec le code d'erreur "},
             { "Crypt", "Voulez-vous chiffrer vos sauvegardes ?" },
-            { "NameUsed", "Déjà utilisé" }
+            { "NameUsed", "Déjà utilisé" },
+            { "ExtLabel", "Choisissez les extensions priotitaires (format : exe;txt;...) :" }
 
         };
     }

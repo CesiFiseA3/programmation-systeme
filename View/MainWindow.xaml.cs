@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Windows.Threading;
+using System.Runtime.Serialization;
+using System.Text.RegularExpressions;
 
 namespace PROGRAMMATION_SYST_ME.View
 {
@@ -20,7 +22,7 @@ namespace PROGRAMMATION_SYST_ME.View
         public ErrorCode Error { set; get; }
         public readonly MainWindowViewModel userInteract = new();
         private UpdateWorkJobWindow updateWind;
-        public Save SaveWin {  set; get; }
+        public SaveWindow SaveWin {  set; get; }
         public MainWindow()
         {
             Process currentProcess = Process.GetCurrentProcess();
@@ -77,7 +79,7 @@ namespace PROGRAMMATION_SYST_ME.View
             CreateButton.Content = LocalizedStrings.Create;
             LanguageTextBlock.Text = LocalizedStrings.Language;
             DescriptionTextBlock.Text = LocalizedStrings.Description;
-
+            ExtensionLabel.Content = LocalizedStrings.ExtLabel;
             var i = 0;
             foreach (BackupJobDataModel job in userInteract.BackupJobsData)
             {
@@ -165,6 +167,10 @@ namespace PROGRAMMATION_SYST_ME.View
             {
                 return;
             }
+            string pattern = "(([a-z]{3})(;))+([a-z]{3})";
+            string extPrio = ExtensionPrioTextBox.Text;
+            if (!(extPrio.Length == 0 || extPrio.Length == 3 || Regex.Match(extPrio, pattern) != Match.Empty))
+                return;
             userInteract.IsSetup = false;
             var msboxAnswer = MessageBox.Show(LocalizedStrings.Crypt, "IsSaveCrypted", MessageBoxButton.YesNoCancel, MessageBoxImage.Question);
             if (msboxAnswer == MessageBoxResult.Yes)
@@ -182,12 +188,12 @@ namespace PROGRAMMATION_SYST_ME.View
 
             //thread et lancer la page
 
-            Thread thread = new Thread (() => Error = userInteract.ExecuteJob(jobsToExec));
+            Thread thread = new Thread (() => Error = userInteract.ExecuteJob(jobsToExec, extPrio));
             thread.Start();
             //instance de la classe qui contient la page
             var saveWinThread = new Thread(() =>
             {
-                SaveWin = new Save(this, jobsToExec);
+                SaveWin = new SaveWindow(this, jobsToExec);
                 System.Windows.Threading.Dispatcher.Run();
             });
             saveWinThread.SetApartmentState(ApartmentState.STA);
@@ -201,6 +207,15 @@ namespace PROGRAMMATION_SYST_ME.View
         }
         private void Window_Closing(object sender, CancelEventArgs e)
         {
+            if (SaveWin != null)
+            {
+                if (!SaveWin.End)
+                {
+                    e.Cancel = true;
+                    return;
+                }
+            }
+            
             Environment.Exit(0);
         }
         public static bool IsOpen(Window window)
