@@ -291,9 +291,26 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         /// <param name="destination">destination directory</param>
         private void CopyFile(FileInfo file, string destination)
         {
-            var index = int.Parse(Thread.CurrentThread.Name);
             while (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
                 Thread.Sleep(50);
+            if (IsCrypt == true)
+            {
+                Process process = new Process();
+                process.StartInfo.UseShellExecute = false;
+                process.StartInfo.FileName = "Cryptosoft.exe";
+                process.StartInfo.Arguments = '"' + file.FullName + '"' + " " + '"' + Path.Combine(destination, file.Name) + '"';
+                process.StartInfo.CreateNoWindow = true;
+                process.StartInfo.RedirectStandardError = true;
+                process.Start();
+            }
+            else
+            {
+                file.CopyTo(Path.Combine(destination, file.Name), true);
+            }
+
+            if (Threads.Count < 1)
+                return;
+            var index = int.Parse(Thread.CurrentThread.Name);
             if (ThreadStatus[index] == Status.TERMINATED)
             {
                 return;
@@ -305,30 +322,13 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
             }
             if (ThreadStatus[index] == Status.RUNNING)
             {
-                if (IsCrypt == true)
-                {
-                    Process process = new Process();
-                    process.StartInfo.UseShellExecute = false;
-                    process.StartInfo.FileName = "Cryptosoft.exe";
-                    process.StartInfo.Arguments = '"' + file.FullName + '"' + " " + '"' + Path.Combine(destination, file.Name) + '"';
-                    process.StartInfo.CreateNoWindow = true;
-                    process.StartInfo.RedirectStandardError = true;
-                    process.Start();
-                }
-                else
-                {
-                    file.CopyTo(Path.Combine(destination, file.Name), true);
-                }
-
-                if (Threads.Count < 1)
-                    return;
                 NbFilesCopied[index]++;
                 RealTimeData[index].NbFilesLeftToDo = RealTimeData[index].TotalFilesToCopy - NbFilesCopied[index];
                 RealTimeData[index].Progression = (double)NbFilesCopied[index] / (double)RealTimeData[index].TotalFilesToCopy * 100;
                 Mut.WaitOne();
                 RealTime.WriteRealTimeFile(RealTimeData);
                 Mut.ReleaseMutex();
-            } 
+            }
         }
         /// <summary>
         /// Copy a file if a change occured while updating total copy info
