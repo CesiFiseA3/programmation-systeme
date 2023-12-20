@@ -293,6 +293,15 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         {
             while (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
                 Thread.Sleep(50);
+            int index = 0;
+            if (Threads.Count > 0)
+            {
+                index = int.Parse(Thread.CurrentThread.Name);
+                if (ThreadStatus[index] == Status.TERMINATED)
+                    return;
+                while (ThreadStatus[index] == Status.PAUSED)
+                    Thread.Sleep(100);
+            }
             if (IsCrypt == true)
             {
                 Process process = new Process();
@@ -310,16 +319,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
 
             if (Threads.Count < 1)
                 return;
-            var index = int.Parse(Thread.CurrentThread.Name);
-            if (ThreadStatus[index] == Status.TERMINATED)
-            {
-                return;
-            }
-            else if (ThreadStatus[index] == Status.PAUSED)
-            {
-                while (ThreadStatus[index] == Status.PAUSED)
-                    Thread.Sleep(100);
-            }
+            index = int.Parse(Thread.CurrentThread.Name);
             if (ThreadStatus[index] == Status.RUNNING)
             {
                 NbFilesCopied[index]++;
