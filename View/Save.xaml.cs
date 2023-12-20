@@ -15,6 +15,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using PROGRAMMATION_SYST_ME.Model;
+using System.Net.Sockets;
 
 namespace PROGRAMMATION_SYST_ME.View
 {
@@ -24,10 +26,22 @@ namespace PROGRAMMATION_SYST_ME.View
     public partial class Save : Window
     {
         private readonly MainWindow mhandle;
+        
         private readonly List<int> jobs;
-        private Thread backThread;  
-        public Save(MainWindow handleMain, List<int> jobsToExec)
+
+        
+
+        public bool End { set; get; } = false;
+        public TcpClient tcpClient { get; private set; }
+
+        public SaveWindow(MainWindow handleMain, List<int> jobsToExec)
         {
+            // create a socket to listen for clients
+            SocketModel socket = new SocketModel();
+
+            tcpClient = new TcpClient("127.0.0.1", 49152);
+
+
             jobs = jobsToExec;
             mhandle = handleMain;
             InitializeComponent();
@@ -51,6 +65,7 @@ namespace PROGRAMMATION_SYST_ME.View
                 bool end = false;
                 while (!end)
                 {
+                    
                     int y = 0;
                     bool canEnd = true;
                     foreach (var job in jobs)
@@ -63,7 +78,7 @@ namespace PROGRAMMATION_SYST_ME.View
                             end = false;
                             canEnd = false;
                         }
-
+                        
                         this.Dispatcher.Invoke(() => ProgressListView.Items[y] = new Item
                         {
                             Name = mhandle.userInteract.BackupJobsData[job].Name,
@@ -71,11 +86,16 @@ namespace PROGRAMMATION_SYST_ME.View
                             ProgrStr = pro.ToString() + " %",
                             Status = mhandle.userInteract.RealTimeData[y].State
                         });
+                        // envoie Name,Progr, ProgrStr, Status au client via socket 
+                        socket.SendDataToClient(tcpClient, mhandle.userInteract.BackupJobsData[job].Name, pro, pro.ToString() + " %", mhandle.userInteract.RealTimeData[y].State);
                         y++;
                     }
                     Thread.Sleep(100);
                 }
-            });
+            })
+            {
+
+            };
             backThread.Start();
 
             Show();
