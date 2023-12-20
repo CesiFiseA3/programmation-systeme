@@ -13,7 +13,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
 {
     public class MainWindowViewModel
     { 
-        //JB: Les champs privés se trouvent toujours en début de classe pour la lisibilité du code
+        // JB: Les champs privés se trouvent toujours en début de classe pour la lisibilité du code
         // Voici un ordre qui est recommendé: 
         // 1) Champs privés
         // 2) Constructeurs
@@ -32,14 +32,18 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         public bool IsSetup { set; get; } = false;
         public bool IsSaving { set; get; } = false;
 
+
         private readonly string businessSoft = "CalculatorApp";
         public MainWindowViewModel()
         {
             BackupJobs = new BackupJobModel(BackupJobsData);
             delegCopy = CopyFile;
             Threads = new List<Thread>();
+            ThreadStatus = new List<Status>();
         }
         public List<Thread> Threads { set; get; }
+
+        public List<Status> ThreadStatus { set; get; } // 0 : dead | 1 : running | 2 : paused
         public List<BackupJobDataModel> BackupJobsData { set; get; } = new List<BackupJobDataModel>();
         public BackupJobModel BackupJobs { set; get; }
         public List<RealTimeDataModel> RealTimeData { set; get; } = new List<RealTimeDataModel>();
@@ -108,6 +112,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         public ErrorCode ExecuteJob(List<int> jobsToExec, string extPrioString)
         {
             IsSaving = true;
+            ThreadStatus.Clear();
             ErrorCode error = ErrorCode.SUCCESS;
             extPrioList.Clear();
             filePrioList.Clear();
@@ -139,10 +144,10 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
 
             indRTime = 0;
             foreach (int i in jobsToExec)
-            {
-                if (error == ErrorCode.SUCCESS)
+            {   
+            if (error == ErrorCode.SUCCESS)
                 {
-                    RealTimeData[indRTime].State = "ACTIVE";
+                    RealTimeData[indRTime].State = "RUNNING";
                     Mut.WaitOne();
                     RealTime.WriteRealTimeFile(RealTimeData);
                     Mut.ReleaseMutex();
@@ -172,7 +177,8 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 Mut.WaitOne();
                 if (error == ErrorCode.SUCCESS)
                 {
-                    RealTimeData[j].State = "SUCCESSFUL";
+                    if (RealTimeData[j].Progression == 100)
+                        RealTimeData[j].State = "SUCCESSFUL";
                 }
                 else
                     RealTimeData[j].State = "ERROR";
@@ -207,6 +213,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 task.Name = indRTime.ToString();
                 task.Start();
                 Threads.Add(task);
+                ThreadStatus.Add(Status.RUNNING);
             }
             else if (File.Exists(BackupJobsData[i].Source))
             {
@@ -214,6 +221,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 task.Name = indRTime.ToString();
                 task.Start();
                 Threads.Add(task);
+                ThreadStatus.Add(Status.RUNNING);
             }
             else
                 return ErrorCode.SOURCE_ERROR;
@@ -285,6 +293,15 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         {
             while (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
                 Thread.Sleep(50);
+            int index = 0;
+            if (Threads.Count > 0)
+            {
+                index = int.Parse(Thread.CurrentThread.Name);
+                if (ThreadStatus[index] == Status.TERMINATED)
+                    return;
+                while (ThreadStatus[index] == Status.PAUSED)
+                    Thread.Sleep(100);
+            }
             if (IsCrypt == true)
             {
                 Process process = new Process();
@@ -302,13 +319,16 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
 
             if (Threads.Count < 1)
                 return;
-            var ind = int.Parse(Thread.CurrentThread.Name);
-            NbFilesCopied[ind]++;
-            RealTimeData[ind].NbFilesLeftToDo = RealTimeData[ind].TotalFilesToCopy - NbFilesCopied[ind];
-            RealTimeData[ind].Progression = (double)NbFilesCopied[ind] / (double)RealTimeData[ind].TotalFilesToCopy * 100;
-            Mut.WaitOne();
-            RealTime.WriteRealTimeFile(RealTimeData);
-            Mut.ReleaseMutex();
+            index = int.Parse(Thread.CurrentThread.Name);
+            if (ThreadStatus[index] == Status.RUNNING)
+            {
+                NbFilesCopied[index]++;
+                RealTimeData[index].NbFilesLeftToDo = RealTimeData[index].TotalFilesToCopy - NbFilesCopied[index];
+                RealTimeData[index].Progression = (double)NbFilesCopied[index] / (double)RealTimeData[index].TotalFilesToCopy * 100;
+                Mut.WaitOne();
+                RealTime.WriteRealTimeFile(RealTimeData);
+                Mut.ReleaseMutex();
+            }
         }
         /// <summary>
         /// Copy a file if a change occured while updating total copy info

@@ -1,6 +1,9 @@
 ﻿using PROGRAMMATION_SYST_ME.Ressources;
+using PROGRAMMATION_SYST_ME.ViewModel;
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Reflection.Emit;
 using System.Text;
@@ -39,10 +42,11 @@ namespace PROGRAMMATION_SYST_ME.View
                 int pro = (int)(mhandle.userInteract.RealTimeData[i].Progression * 100);
                 ProgressListView.Items.Add(new Item
                 {
+                    Id = job,
                     Name = mhandle.userInteract.BackupJobsData[job].Name,
                     Progr = pro,
                     ProgrStr = pro.ToString() + " %",
-                    Status = mhandle.userInteract.RealTimeData[i].State
+                    Status = mhandle.userInteract.RealTimeData[i].State,
                 });
                 i++;
             }
@@ -55,7 +59,7 @@ namespace PROGRAMMATION_SYST_ME.View
                     foreach (var job in jobs)
                     {
                         int pro = (int)mhandle.userInteract.RealTimeData[y].Progression;
-                        if (pro == 100 && canEnd)
+                        if ((pro == 100 && canEnd) || mhandle.userInteract.RealTimeData[y].State == "TERMINATED")
                             End = true;
                         else
                         {
@@ -65,6 +69,7 @@ namespace PROGRAMMATION_SYST_ME.View
 
                         this.Dispatcher.Invoke(() => ProgressListView.Items[y] = new Item
                         {
+                            Id = job,
                             Name = mhandle.userInteract.BackupJobsData[job].Name,
                             Progr = pro,
                             ProgrStr = pro.ToString() + " %",
@@ -89,9 +94,62 @@ namespace PROGRAMMATION_SYST_ME.View
 
             mhandle.SaveWin = null;
         }
+
+        private void Start(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button != null)
+            {
+                int id = (int)button.Tag;
+                if (!(mhandle.userInteract.ThreadStatus[id] == Status.RUNNING) && !End)
+                {
+                    mhandle.userInteract.ThreadStatus[id] = Status.RUNNING;
+                    mhandle.userInteract.RealTimeData[id].State = "RUNNING";
+                }
+                UpdateRealTime();
+            }
+        }
+
+        private void Pause(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button != null)
+            {
+                int id = (int)button.Tag;
+                if (!(mhandle.userInteract.ThreadStatus[id] == Status.PAUSED) && !End)
+                {
+                    mhandle.userInteract.ThreadStatus[id] = Status.PAUSED;
+                    mhandle.userInteract.RealTimeData[id].State = "PAUSED";
+                }
+                UpdateRealTime();
+            }
+        }
+
+        private void Stop(object sender, RoutedEventArgs e)
+        {
+            Button button = sender as Button;
+            if (button != null)
+            {
+                int id = (int)button.Tag;
+                if (!(mhandle.userInteract.ThreadStatus[id] == Status.TERMINATED))
+                {
+                    mhandle.userInteract.ThreadStatus[id] = Status.TERMINATED;
+                    mhandle.userInteract.RealTimeData[id].State = "TERMINATED";
+                }
+                UpdateRealTime();
+            }
+        }
+
+        private void UpdateRealTime()
+        {
+            mhandle.userInteract.Mut.WaitOne();
+            mhandle.userInteract.RealTime.WriteRealTimeFile(mhandle.userInteract.RealTimeData);
+            mhandle.userInteract.Mut.ReleaseMutex();
+        }
     }
     public class Item()
     {
+        public int Id { get; set; }
         public string Name { get; set; }
         public int Progr { get; set; }
         public string ProgrStr { get; set; }
