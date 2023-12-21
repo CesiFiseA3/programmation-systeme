@@ -15,6 +15,7 @@ namespace PROGRAMMATION_SYST_ME.Ressources
         public static string SaveInfo1 => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "SaveInfo1");
         public static string SaveInfo2 => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "SaveInfo2");
         public static string SaveInfo3 => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "SaveInfo3");
+        public static string SaveInfo4 => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "SaveInfo4");
         public static string Language => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "language");
         public static string Delete => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "Delete");
         public static string Create => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "create");
@@ -34,6 +35,7 @@ namespace PROGRAMMATION_SYST_ME.Ressources
         public static string BackupError => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "BackupError");
         public static string Crypt => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "Crypt");
         public static string NameUsed => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "NameUsed");
+        public static string ExtLabel => LanguageManager.GetLocalizedString(Thread.CurrentThread.CurrentUICulture.Name, "ExtLabel");
 
 
 

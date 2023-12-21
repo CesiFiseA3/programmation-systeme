@@ -35,10 +35,12 @@ public static class LanguageManager
             { "SaveInfo1", "Name" },
             { "SaveInfo2", "Status" },
             { "SaveInfo3", "Progression" },
+            { "SaveInfo4", "Actions" },
             { "BackupEnd", "Backups ended without a problem" },
             { "BackupError", "Error : Backup ended with error code " },
             { "Crypt", "Do you want to encrypt your backups ?" },
-            { "NameUsed", "Already used" }
+            { "NameUsed", "Already used" },
+            { "ExtLabel", "Choose priority extension (format : exe;txt;...) :" }
         };
 
         languages["fr-FR"] = new Dictionary<string, string>
@@ -64,10 +66,12 @@ public static class LanguageManager
             { "SaveInfo1", "Nom" },
             { "SaveInfo2", "Statut" },
             { "SaveInfo3", "Progression" },
+            { "SaveInfo4", "Actions" },
             { "BackupEnd", "Les sauvegardes se sont déroulées sans problème"},
             { "BackupError", "Erreur : Sauvegarde terminée avec le code d'erreur "},
             { "Crypt", "Voulez-vous chiffrer vos sauvegardes ?" },
-            { "NameUsed", "Déjà utilisé" }
+            { "NameUsed", "Déjà utilisé" },
+            { "ExtLabel", "Choisissez les extensions priotitaires (format : exe;txt;...) :" }
 
         };
     }

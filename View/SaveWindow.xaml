@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PROGRAMMATION_SYST_ME.Ressources"
         xmlns:vm="clr-namespace:PROGRAMMATION_SYST_ME.Ressources"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
         mc:Ignorable="d"
         Title="Save" Height="450" Width="800" Background="#FFDAAB3A"
         MinWidth="950" MinHeight="620"
@@ -70,22 +71,38 @@
                         <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
                             <GridViewColumn x:Name="NameHeader"  Header= "{x:Static local:LocalizedStrings.SaveInfo1}" Width="250" DisplayMemberBinding="{Binding Name}"/>
                             <GridViewColumn x:Name="ProgressHeader" Header="{x:Static local:LocalizedStrings.SaveInfo3}" Width="250">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <ProgressBar Maximum="100" Value="{Binding Progr}" Height="20" Width="125" HorizontalAlignment="Center" VerticalAlignment="Center"></ProgressBar>
+                                        <Label x:Name="ProgressLabel" Content="{Binding ProgrStr}"/>
+                                    </StackPanel>
+                                    
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
 
-                                <GridViewColumn.CellTemplate>
-                                    <DataTemplate>
-                                        <StackPanel Orientation="Horizontal">
-                                            <ProgressBar Maximum="100" Value="{Binding Progr}" Height="20" Width="175" HorizontalAlignment="Center" VerticalAlignment="Center"></ProgressBar>
-                                            <Label x:Name="ProgressLabel" Content="{Binding ProgrStr}"/>
-                                        </StackPanel>
-
-                                    </DataTemplate>
-                                </GridViewColumn.CellTemplate>
-                            </GridViewColumn>
-
-                            <GridViewColumn x:Name="ProgressBarHeader"  Header="{x:Static local:LocalizedStrings.SaveInfo2}" Width="250" DisplayMemberBinding="{Binding Status}"/>
-                        </GridView>
-                    </ListView.View>
-                </ListView>
-            </Grid>
+                        <GridViewColumn x:Name="ProgressBarHeader"  Header="{x:Static local:LocalizedStrings.SaveInfo2}" Width="150" DisplayMemberBinding="{Binding Status}"/>
+                        <GridViewColumn x:Name="ActionsHeader" Header="{x:Static local:LocalizedStrings.SaveInfo4}" Width="200">
+                            <GridViewColumn.CellTemplate>
+                                <DataTemplate>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Margin="5" Click="Start" Tag="{Binding Id}">
+                                            <fa:ImageAwesome HorizontalAlignment="Center" VerticalAlignment="Center" Icon="Play" Width="25" Height="25" Margin="5"/>
+                                        </Button>
+                                        <Button Margin="5" Click="Pause" Tag="{Binding Id}">
+                                            <fa:ImageAwesome HorizontalAlignment="Center" VerticalAlignment="Center" Icon="Pause" Width="25" Height="25" Margin="5"/>
+                                        </Button>
+                                        <Button Margin="5" Click="Stop" Tag="{Binding Id}">
+                                            <fa:ImageAwesome HorizontalAlignment="Center" VerticalAlignment="Center" Icon="Stop" Width="25" Height="25" Margin="5"/>
+                                        </Button>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </GridViewColumn.CellTemplate>
+                        </GridViewColumn>
+                    </GridView>
+                </ListView.View>
+            </ListView>
+        </Grid>
     </Grid>
 </Window>

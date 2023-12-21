@@ -15,7 +15,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
 {
     public class MainWindowViewModel
     { 
-        //JB: Les champs privés se trouvent toujours en début de classe pour la lisibilité du code
+        // JB: Les champs privés se trouvent toujours en début de classe pour la lisibilité du code
         // Voici un ordre qui est recommendé: 
         // 1) Champs privés
         // 2) Constructeurs
@@ -29,11 +29,13 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         private delegate void CopyType(FileInfo file, string destination);
         CopyType delegCopy;
         private List<Stopwatch> watch = new ();
+        private List<string> filePrioList = new();
         private SocketModel socketModel = new SocketModel();
                 
         public Mutex Mut { set; get; } = new();
         public bool IsSetup { set; get; } = false;
         public bool IsSaving { set; get; } = false;
+
 
         private readonly string businessSoft = "CalculatorApp";
         public MainWindowViewModel()
@@ -41,15 +43,17 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
             BackupJobs = new BackupJobModel(BackupJobsData);
             delegCopy = CopyFile;
             Threads = new List<Thread>();
-            
-            
+            ThreadStatus = new List<Status>();
         }
         public List<Thread> Threads { set; get; }
+
+        public List<Status> ThreadStatus { set; get; } // 0 : dead | 1 : running | 2 : paused
         public List<BackupJobDataModel> BackupJobsData { set; get; } = new List<BackupJobDataModel>();
         public BackupJobModel BackupJobs { set; get; }
         public List<RealTimeDataModel> RealTimeData { set; get; } = new List<RealTimeDataModel>();
         public RealTimeModel RealTime { set; get; } = new RealTimeModel();
         public LogModel LogFile { set; get; } = new LogModel();
+        private List<string> extPrioList = new List<string>();
         public bool? IsCrypt { set; get; }
 
         public void ChangeExtensionLog(string extLog)
@@ -109,49 +113,61 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         /// </summary>
         /// <param name="selection">input user</param>
         /// <returns>error code BUSINESS_SOFT_LAUNCHED or INPUT_USER or SOURCE_ERROR or SUCCESS</returns>
-        public ErrorCode ExecuteJob(List<int> jobsToExec)
+        public ErrorCode ExecuteJob(List<int> jobsToExec, string extPrioString)
         {
             IsSaving = true;
+            ThreadStatus.Clear();
             ErrorCode error = ErrorCode.SUCCESS;
-
-            TcpClient tcpClient = null;
-
-            try
+            extPrioList.Clear();
+            filePrioList.Clear();
+            if (extPrioString.Length > 3)
             {
-                
-                if (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
-                    return ErrorCode.BUSINESS_SOFT_LAUNCHED;
-
-                SetupRealTime(jobsToExec);
-
-                indRTime = 0;
-
-                foreach (int i in jobsToExec)
+                foreach (string ext in extPrioString.Split(';'))
                 {
-                    if (error == ErrorCode.SUCCESS)
-                    {
-                        string status = $"Backup Job {i} - State: {RealTimeData[indRTime].State}";
+                    extPrioList.Add(ext);
+                }
+            }
+            else if (extPrioString.Length == 3)
+            {
+                extPrioList.Add(extPrioString);
+            }
+            TcpClient tcpClient = null;
+            try {
+              if (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
+                  return ErrorCode.BUSINESS_SOFT_LAUNCHED;
 
-                        
-                        RealTimeData[indRTime].State = "ACTIVE";
-                        Mut.WaitOne();
-                        RealTime.WriteRealTimeFile(RealTimeData);
-                        Mut.ReleaseMutex();
+              indRTime = 0;
+              foreach (int i in jobsToExec)
+              {
+                  GetCopyDeleg(i);
+                  CreateDir(BackupJobsData[i].Source, BackupJobsData[i].Destination, delegCopy);
 
-                        // Watch is wrong cause of multithreading
-                        watch.Add(new Stopwatch());
-                        watch[indRTime].Start();
+                  indRTime++;
+              }
 
-                        GetCopyDeleg(i);
+              SetupRealTime(jobsToExec);
 
-                        error = CreateDir(i, indRTime);
-                    }
-                    else
-                    {
-                        break;
-                    }
+              indRTime = 0;
+              foreach (int i in jobsToExec)
+                  {   
+                  if (error == ErrorCode.SUCCESS)
+                  {
+                          RealTimeData[indRTime].State = "RUNNING";
+                          Mut.WaitOne();
+                          RealTime.WriteRealTimeFile(RealTimeData);
+                          Mut.ReleaseMutex();
+                          watch.Add(new Stopwatch());
+                          watch[indRTime].Start();
 
-                    indRTime++;
+                          GetCopyDeleg(i);
+                          error = StartJob(i, indRTime);
+                  }
+                  else
+                  {
+                      break;
+                  }
+
+                  indRTime++;
                 }
             }
             catch (Exception ex)
@@ -183,7 +199,8 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 Mut.WaitOne();
                 if (error == ErrorCode.SUCCESS)
                 {
-                    RealTimeData[j].State = "SUCCESSFUL";
+                    if (RealTimeData[j].Progression == 100)
+                        RealTimeData[j].State = "SUCCESSFUL";
                 }
                 else
                 {
@@ -215,7 +232,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 delegCopy = CopyFileDiff;
             }
         }
-        private ErrorCode CreateDir(int i, int indRTime)
+        private ErrorCode StartJob(int i, int indRTime)
         {
             if (Directory.Exists(BackupJobsData[i].Source))
             {
@@ -223,6 +240,7 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 task.Name = indRTime.ToString();
                 task.Start();
                 Threads.Add(task);
+                ThreadStatus.Add(Status.RUNNING);
             }
             else if (File.Exists(BackupJobsData[i].Source))
             {
@@ -230,9 +248,28 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 task.Name = indRTime.ToString();
                 task.Start();
                 Threads.Add(task);
+                ThreadStatus.Add(Status.RUNNING);
             }
             else
                 return ErrorCode.SOURCE_ERROR;
+            return ErrorCode.SUCCESS;
+        }
+        private ErrorCode CreateDir(string source, string destination, CopyType deleg)
+        {
+            var dir = new DirectoryInfo(source);
+
+            if (!dir.Exists)
+                return ErrorCode.SOURCE_ERROR;
+            DirectoryInfo[] dirs = dir.GetDirectories();
+
+            var dirDest = new DirectoryInfo(destination);
+            if (deleg == CopyFile)
+                if (dirDest.Exists)
+                    Directory.Delete(destination, true);
+            Directory.CreateDirectory(destination);
+
+            foreach (DirectoryInfo subDir in dirs)
+                CreateDir(subDir.FullName, Path.Combine(destination, subDir.Name), deleg);
             return ErrorCode.SUCCESS;
         }
         /// <summary>
@@ -240,8 +277,13 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         /// </summary>
         /// <param name="file">a file</param>
         /// <param name="destination">null by default (only here for delegate)</param>
-        private void GetDirectoryInfo(FileInfo file, string destination = null)
+        private void GetDirectoryInfo(FileInfo file, string destination)
         {
+            foreach (string ext in extPrioList)
+            {
+                if (file.Extension == ('.' + ext))
+                    CopyFile(file, destination);
+            }
             totalSaveSize += file.Length;
             totalNbFile++;
         }
@@ -256,18 +298,11 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         {
             var dir = new DirectoryInfo(source);
 
-            if (!dir.Exists)
-                return ErrorCode.SOURCE_ERROR;
             DirectoryInfo[] dirs = dir.GetDirectories();
 
-            var dirDest = new DirectoryInfo(destination);
-            if (deleg == CopyFile)
-                if (dirDest.Exists)
-                    Directory.Delete(destination, true);
-            Directory.CreateDirectory(destination);
             foreach (FileInfo file in dir.GetFiles())
             {
-                deleg(file, destination);
+                 deleg(file, destination);
             }
 
             foreach (DirectoryInfo subDir in dirs)
@@ -285,6 +320,15 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         {
             while (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
                 Thread.Sleep(50);
+            int index = 0;
+            if (Threads.Count > 0)
+            {
+                index = int.Parse(Thread.CurrentThread.Name);
+                if (ThreadStatus[index] == Status.TERMINATED)
+                    return;
+                while (ThreadStatus[index] == Status.PAUSED)
+                    Thread.Sleep(100);
+            }
             if (IsCrypt == true)
             {
                 Process process = new Process();
@@ -300,13 +344,18 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                 file.CopyTo(Path.Combine(destination, file.Name), true);
             }
 
-            var ind = int.Parse(Thread.CurrentThread.Name);
-            NbFilesCopied[ind]++;
-            RealTimeData[ind].NbFilesLeftToDo = RealTimeData[ind].TotalFilesToCopy - NbFilesCopied[ind];
-            RealTimeData[ind].Progression = (double)NbFilesCopied[ind] / (double)RealTimeData[ind].TotalFilesToCopy * 100;
-            Mut.WaitOne();
-            RealTime.WriteRealTimeFile(RealTimeData);
-            Mut.ReleaseMutex();
+            if (Threads.Count < 1)
+                return;
+            index = int.Parse(Thread.CurrentThread.Name);
+            if (ThreadStatus[index] == Status.RUNNING)
+            {
+                NbFilesCopied[index]++;
+                RealTimeData[index].NbFilesLeftToDo = RealTimeData[index].TotalFilesToCopy - NbFilesCopied[index];
+                RealTimeData[index].Progression = (double)NbFilesCopied[index] / (double)RealTimeData[index].TotalFilesToCopy * 100;
+                Mut.WaitOne();
+                RealTime.WriteRealTimeFile(RealTimeData);
+                Mut.ReleaseMutex();
+            }
         }
         /// <summary>
         /// Copy a file if a change occured while updating total copy info
