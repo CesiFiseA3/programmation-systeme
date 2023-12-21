@@ -10,68 +10,67 @@
         Title="Save" Height="450" Width="800" Background="#FFDAAB3A"
         MinWidth="950" MinHeight="620"
         Closing="Window_Closing">
-    <Grid Margin="2,34,0,22">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="223*"/>
-            <ColumnDefinition Width="57*"/>
-            <ColumnDefinition Width="145*"/>
-            <ColumnDefinition Width="347*"/>
-            <ColumnDefinition Width="177*"/>
-
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="58.671"/>
-            <RowDefinition/>
-
-        </Grid.RowDefinitions>
-
-
-        <StackPanel Background="#FFDAAB3A" Grid.ColumnSpan="5">
-            <TextBlock x:Name="MsgTextBlock" Height="59" Width="660" Text="{x:Static local:LocalizedStrings.Message}" FontWeight="Bold" FontSize="30"/>
-
-        </StackPanel>
-
-
-        <Grid Grid.Row="1" Background="#FF5C5C5C" Grid.ColumnSpan="5" Margin="-27,0,0,0">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="488*"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
+        <Grid Margin="2,34,0,22">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition Width="Auto"/>
-                <ColumnDefinition/>
-                <ColumnDefinition Width="0"/>
+                <ColumnDefinition Width="223*"/>
+                <ColumnDefinition Width="57*"/>
+                <ColumnDefinition Width="145*"/>
+                <ColumnDefinition Width="347*"/>
+                <ColumnDefinition Width="177*"/>
+
             </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="58.671"/>
+                <RowDefinition/>
 
-            <Rectangle x:Name="descriptions" Grid.Column="2" Margin="103,49,56,87" Stroke="Black" RadiusX="18.1" RadiusY="18.1">
-                <Rectangle.Fill>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="Black" Offset="0.194"/>
-                        <GradientStop Color="White" Offset="0.205"/>
-                    </LinearGradientBrush>
-                </Rectangle.Fill>
-            </Rectangle>
-            <ListView x:Name="ProgressListView" Grid.Column="2" Margin="126,81,79,102"  Foreground="Black" BorderBrush="Black" OpacityMask="Black" RenderTransformOrigin="0.501,0.579" FontSize="20" FontWeight="Bold">
-                <ListView.ItemContainerStyle>
-                    <Style/>
-                </ListView.ItemContainerStyle>
-                <ListView.BindingGroup>
-                    <BindingGroup/>
-                </ListView.BindingGroup>
-                <ListView.Background>
-                    <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                        <GradientStop Color="#FF060505"/>
-                        <GradientStop Color="White" Offset="0.133"/>
-                        <GradientStop Color="#FF131212" Offset="0.117"/>
-                    </LinearGradientBrush>
-                </ListView.Background>
-                <!--ItemsSource=""-->
-                <ListView.View>
-                    <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
-                        <GridViewColumn x:Name="NameHeader"  Header= "{x:Static local:LocalizedStrings.SaveInfo1}" Width="200" DisplayMemberBinding="{Binding Name}"/>
-                        <GridViewColumn x:Name="ProgressHeader" Header="{x:Static local:LocalizedStrings.SaveInfo3}" Width="200">
+            </Grid.RowDefinitions>
 
+
+            <StackPanel Background="#FFDAAB3A" Grid.ColumnSpan="5">
+                <TextBlock x:Name="MsgTextBlock" Height="59" Width="660" Text="{x:Static local:LocalizedStrings.Message}" FontWeight="Bold" FontSize="30"/>
+
+            </StackPanel>
+
+
+            <Grid Grid.Row="1" Background="#FF5C5C5C" Grid.ColumnSpan="5" Margin="-27,0,0,0">
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="488*"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                    <ColumnDefinition Width="0"/>
+                </Grid.ColumnDefinitions>
+
+                <Rectangle x:Name="descriptions" Grid.Column="2" Margin="103,49,56,87" Stroke="Black" RadiusX="18.1" RadiusY="18.1">
+                    <Rectangle.Fill>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="Black" Offset="0.194"/>
+                            <GradientStop Color="White" Offset="0.205"/>
+                        </LinearGradientBrush>
+                    </Rectangle.Fill>
+                </Rectangle>
+                <ListView x:Name="ProgressListView" Grid.Column="2" Margin="126,81,79,102"  Foreground="Black" BorderBrush="Black" OpacityMask="Black" RenderTransformOrigin="0.501,0.579" FontSize="20" FontWeight="Bold">
+                    <ListView.ItemContainerStyle>
+                        <Style/>
+                    </ListView.ItemContainerStyle>
+                    <ListView.BindingGroup>
+                        <BindingGroup/>
+                    </ListView.BindingGroup>
+                    <ListView.Background>
+                        <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                            <GradientStop Color="#FF060505"/>
+                            <GradientStop Color="White" Offset="0.133"/>
+                            <GradientStop Color="#FF131212" Offset="0.117"/>
+                        </LinearGradientBrush>
+                    </ListView.Background>
+                    <!--ItemsSource=""-->
+                    <ListView.View>
+                        <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
+                            <GridViewColumn x:Name="NameHeader"  Header= "{x:Static local:LocalizedStrings.SaveInfo1}" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn x:Name="ProgressHeader" Header="{x:Static local:LocalizedStrings.SaveInfo3}" Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">
