@@ -8,6 +8,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using System.Net.Sockets;
+using System.Collections.ObjectModel;
 
 namespace PROGRAMMATION_SYST_ME.ViewModel
 {
@@ -28,6 +30,8 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
         CopyType delegCopy;
         private List<Stopwatch> watch = new ();
         private List<string> filePrioList = new();
+        private SocketModel socketModel = new SocketModel();
+                
         public Mutex Mut { set; get; } = new();
         public bool IsSetup { set; get; } = false;
         public bool IsSaving { set; get; } = false;
@@ -127,48 +131,66 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
             {
                 extPrioList.Add(extPrioString);
             }
+            TcpClient tcpClient = null;
+            try {
+              if (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
+                  return ErrorCode.BUSINESS_SOFT_LAUNCHED;
 
-            if (IsBusinessSoftLaunched() == ErrorCode.BUSINESS_SOFT_LAUNCHED)
-                return ErrorCode.BUSINESS_SOFT_LAUNCHED;
+              indRTime = 0;
+              foreach (int i in jobsToExec)
+              {
+                  GetCopyDeleg(i);
+                  CreateDir(BackupJobsData[i].Source, BackupJobsData[i].Destination, delegCopy);
 
-            indRTime = 0;
-            foreach (int i in jobsToExec)
-            {
-                GetCopyDeleg(i);
-                CreateDir(BackupJobsData[i].Source, BackupJobsData[i].Destination, delegCopy);
+                  indRTime++;
+              }
 
-                indRTime++;
-            }
+              SetupRealTime(jobsToExec);
 
-            SetupRealTime(jobsToExec);
+              indRTime = 0;
+              foreach (int i in jobsToExec)
+                  {   
+                  if (error == ErrorCode.SUCCESS)
+                  {
+                          RealTimeData[indRTime].State = "RUNNING";
+                          Mut.WaitOne();
+                          RealTime.WriteRealTimeFile(RealTimeData);
+                          Mut.ReleaseMutex();
+                          watch.Add(new Stopwatch());
+                          watch[indRTime].Start();
 
-            indRTime = 0;
-            foreach (int i in jobsToExec)
-            {   
-            if (error == ErrorCode.SUCCESS)
-                {
-                    RealTimeData[indRTime].State = "RUNNING";
-                    Mut.WaitOne();
-                    RealTime.WriteRealTimeFile(RealTimeData);
-                    Mut.ReleaseMutex();
-                    watch.Add(new Stopwatch());
-                    watch[indRTime].Start();
+                          GetCopyDeleg(i);
+                          error = StartJob(i, indRTime);
+                  }
+                  else
+                  {
+                      break;
+                  }
 
-                    GetCopyDeleg(i);
-
-                    error = StartJob(i, indRTime);
+                  indRTime++;
                 }
-                else
-                    break;
-                indRTime++;
             }
+            catch (Exception ex)
+            {
+                // Handle socket-related exceptions
+                Console.WriteLine($"SocketException: {ex.Message}");
+                
+            }
+            finally
+            {
+                // Close the TcpClient outside the loop
+                tcpClient?.Close();
+            }
+
+            // Wait for Cryptosoft processes to finish
             Process[] cryptProcesses;
             do
             {
                 cryptProcesses = Process.GetProcessesByName("Cryptosoft");
                 Thread.Sleep(50);
-            }
-            while (cryptProcesses.Length != 0);
+            } while (cryptProcesses.Length != 0);
+
+            // Process the threads and update RealTimeData
             foreach (Thread t in Threads)
             {
                 int j = int.Parse(t.Name);
@@ -181,19 +203,24 @@ namespace PROGRAMMATION_SYST_ME.ViewModel
                         RealTimeData[j].State = "SUCCESSFUL";
                 }
                 else
+                {
                     RealTimeData[j].State = "ERROR";
+                }
                 RealTime.WriteRealTimeFile(RealTimeData);
                 Mut.ReleaseMutex();
+
+                // Write log for the completed job
                 LogFile.WriteLogSave(
-                        BackupJobsData[jobsToExec[j]],
-                        watch[j].ElapsedMilliseconds,
-                        RealTimeData[j].TotalFilesSize
-                    );
+                    BackupJobsData[jobsToExec[j]],
+                    watch[j].ElapsedMilliseconds,
+                    RealTimeData[j].TotalFilesSize
+                );
             }
+
             IsSaving = false;
-            Threads.Clear();
             return error;
         }
+
         private void GetCopyDeleg(int i)
         {
             if (BackupJobsData[i].Type == 0) // Full backup
