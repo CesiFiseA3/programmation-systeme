@@ -69,8 +69,8 @@
                     <!--ItemsSource=""-->
                     <ListView.View>
                         <GridView AllowsColumnReorder="true" ColumnHeaderToolTip="Employee Information">
-                            <GridViewColumn x:Name="NameHeader"  Header= "{x:Static local:LocalizedStrings.SaveInfo1}" Width="250" DisplayMemberBinding="{Binding Name}"/>
-                            <GridViewColumn x:Name="ProgressHeader" Header="{x:Static local:LocalizedStrings.SaveInfo3}" Width="250">
+                            <GridViewColumn x:Name="NameHeader"  Header= "{x:Static local:LocalizedStrings.SaveInfo1}" Width="200" DisplayMemberBinding="{Binding Name}"/>
+                            <GridViewColumn x:Name="ProgressHeader" Header="{x:Static local:LocalizedStrings.SaveInfo3}" Width="200">
                             <GridViewColumn.CellTemplate>
                                 <DataTemplate>
                                     <StackPanel Orientation="Horizontal">

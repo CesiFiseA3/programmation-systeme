@@ -56,7 +56,7 @@ namespace PROGRAMMATION_SYST_ME.View
                 int pro = (int)(mhandle.userInteract.RealTimeData[i].Progression * 100);
                 ProgressListView.Items.Add(new Item
                 {
-                    Id = job,
+                    Id = i,
                     Name = mhandle.userInteract.BackupJobsData[job].Name,
                     Progr = pro,
                     ProgrStr = pro.ToString() + " %",
@@ -84,7 +84,7 @@ namespace PROGRAMMATION_SYST_ME.View
                         
                         this.Dispatcher.Invoke(() => ProgressListView.Items[y] = new Item
                         {
-                            Id = job,
+                            Id = y,
                             Name = mhandle.userInteract.BackupJobsData[job].Name,
                             Progr = pro,
                             ProgrStr = pro.ToString() + " %",
